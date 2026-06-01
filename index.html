@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>番茄钟</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 标题栏 -->
+    <div class="title-bar">
+      <div class="window-controls">
+        <div class="window-btn close" id="closeBtn"></div>
+        <div class="window-btn minimize" id="minimizeBtn"></div>
+      </div>
+      <span id="titleText">番茄钟</span>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- ===== 计时器视图 ===== -->
+      <div class="view active" id="timerView">
+        <!-- 模式切换 -->
+        <div class="mode-tabs" id="modeTabs">
+          <button class="mode-tab active" data-mode="work">专注</button>
+          <button class="mode-tab" data-mode="shortBreak">短休息</button>
+          <button class="mode-tab" data-mode="longBreak">长休息</button>
+        </div>
+
+        <!-- 计时器圆环 -->
+        <div class="timer-section">
+          <div class="timer-circle-wrapper">
+            <svg class="timer-circle-svg" viewBox="0 0 200 200">
+              <circle class="timer-circle-bg" cx="100" cy="100" r="90"/>
+              <circle
+                id="progressCircle"
+                class="timer-circle-progress"
+                cx="100" cy="100" r="90"
+                stroke-dasharray="565.48"
+                stroke-dashoffset="0"
+              />
+            </svg>
+            <div class="timer-display">
+              <div class="timer-time" id="timerDisplay">25:00</div>
+              <div class="timer-mode-label" id="modeLabel">专注中</div>
+              <div class="pomodoro-count" id="pomodoroCount">今日番茄: 0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls">
+          <button class="btn btn-secondary btn-icon" id="resetBtn" title="重置">↺</button>
+          <button class="btn btn-primary" id="toggleBtn">
+            <span id="toggleBtnText">开始</span>
+          </button>
+          <button class="btn btn-secondary btn-icon" id="skipBtn" title="跳过">⏭</button>
+        </div>
+      </div>
+
+      <!-- ===== 任务视图 ===== -->
+      <div class="view" id="taskView">
+        <div class="view-header">任务列表</div>
+        <div class="task-input-row">
+          <input type="text" class="task-input" id="taskInput" placeholder="添加新任务..." maxlength="100">
+          <button class="btn btn-primary" id="addTaskBtn">添加</button>
+        </div>
+        <div class="task-list" id="taskList">
+          <!-- 任务项动态插入 -->
+        </div>
+        <div class="empty-state" id="taskEmptyState" style="display:none;">
+          暂无任务，添加一个开始专注吧！
+        </div>
+      </div>
+
+      <!-- ===== 统计视图 ===== -->
+      <div class="view" id="statsView">
+        <div class="view-header">统计数据</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="statToday">0</div>
+            <div class="stat-label">今日番茄</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statWeek">0</div>
+            <div class="stat-label">本周番茄</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statFocusTime">0h</div>
+            <div class="stat-label">今日专注</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statTasks">0</div>
+            <div class="stat-label">完成任务</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">近7天番茄数</div>
+          <div class="chart-bars" id="weeklyChart">
+            <!-- 柱状图动态生成 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 设置视图 ===== -->
+      <div class="view" id="settingsView">
+        <div class="view-header">设置</div>
+        <div class="settings-list">
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">专注时长</div>
+              <div class="setting-desc">每个番茄钟的时长（分钟）</div>
+            </div>
+            <input type="number" class="number-input" id="settingWorkTime" min="1" max="60" value="25">
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">短休息时长</div>
+              <div class="setting-desc">每个短休息的时长（分钟）</div>
+            </div>
+            <input type="number" class="number-input" id="settingShortBreak" min="1" max="30" value="5">
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">长休息时长</div>
+              <div class="setting-desc">每个长休息的时长（分钟）</div>
+            </div>
+            <input type="number" class="number-input" id="settingLongBreak" min="1" max="60" value="15">
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">长休息间隔</div>
+              <div class="setting-desc">每完成几个番茄后进入长休息</div>
+            </div>
+            <input type="number" class="number-input" id="settingLongInterval" min="2" max="10" value="4">
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">自动开始</div>
+              <div class="setting-desc">休息结束后自动开始下一个番茄</div>
+            </div>
+            <div class="toggle-switch" id="toggleAutoStart">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">音效提醒</div>
+              <div class="setting-desc">计时结束时播放提示音</div>
+            </div>
+            <div class="toggle-switch on" id="toggleSound">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">桌面通知</div>
+              <div class="setting-desc">计时结束时发送桌面通知</div>
+            </div>
+            <div class="toggle-switch on" id="toggleNotification">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-view="timer">
+        <span class="nav-icon">⏱</span>
+        <span>计时</span>
+      </button>
+      <button class="nav-item" data-view="task">
+        <span class="nav-icon">📝</span>
+        <span>任务</span>
+      </button>
+      <button class="nav-item" data-view="stats">
+        <span class="nav-icon">📊</span>
+        <span>统计</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <span class="nav-icon">⚙</span>
+        <span>设置</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- 浏览器兼容层（Electron 环境下不生效） -->
+  <script src="browser-compat.js"></script>
+  <!-- 先加载计时器核心，再加载渲染进程 -->
+  <script src="timer.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
